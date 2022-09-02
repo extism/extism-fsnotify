@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -15,9 +14,8 @@ import (
 )
 
 type EventInput struct {
-	EventFileName string            `json:"event_file_name"`
-	EventFileData string            `json:"event_file_data"`
-	DirEntryFiles map[string]string `json:"dir_entry_files"`
+	EventFileName string `json:"event_file_name"`
+	EventFileData string `json:"event_file_data"`
 }
 
 func main() {
@@ -62,19 +60,15 @@ func main() {
 				dir := filepath.Dir(event.Name)
 				entries, err := os.ReadDir(dir)
 				catch(err, fmt.Sprintf("read dir from %s", event.Name))
-				files := make(map[string]string)
+				files := make([]string, 0)
 				for _, file := range entries {
 					if file.IsDir() {
 						continue
 					}
-					data, err := ioutil.ReadFile(event.Name)
-					catch(err, "read file to pass to wasm as json")
-
-					fmt.Println(file.Name())
-					files[file.Name()] = base64.RawStdEncoding.EncodeToString(data)
+					files = append(files, file.Name())
 				}
 
-				for name := range files {
+				for _, name := range files {
 					fmt.Println(name)
 					if strings.HasSuffix(name, ".wasm") {
 						module := fmt.Sprintf("%s%s%s", dir, string(filepath.Separator), name)
@@ -92,7 +86,6 @@ func main() {
 						eventInput := EventInput{
 							EventFileData: base64.RawStdEncoding.EncodeToString(eventFileData),
 							EventFileName: filepath.Base(event.Name),
-							DirEntryFiles: files,
 						}
 						input, err := json.Marshal(&eventInput)
 						catch(err, "serialize event input to json")
