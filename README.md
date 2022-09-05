@@ -7,17 +7,44 @@ Use the filesystem as a computing environment.
 Make sure you have Extism installed: https://extism.org/docs/install
 
 ```sh
-make plugin # requires Rust toolchain
+make plugins # requires Rust toolchain
 make run # requires Go toolchain
 ```
 
-Demo: invert your images using Extism + your file system (or build your own plug-ins to operate on files, see the plugins directory for implementation)
+### Demo: construct programmable directories on your filesystem.
 
-- add a new PNG to the opened directory (or navigate to `./inverter` at repo root)
-- see new PNG replacing the original with inverted colors
+- **`plugins/invert`**: invert the colors of a PNG file 
+  - add a new PNG to the directory containing this .wasm plug-in
+  - see new PNG replacing the original with inverted colors
+  
+- **`plugins/md2html`**: convert Markdown in to HTML files 
+  - add a Markdown file to the directory containing this .wasm plug-in
+  - see a new HTML file generated next to the Markdown file
 
-Currently not run recursively, but would be cool to assume all new directories with files + .wasm are watched and computed.
+The host program runs a recursive watcher, to build the initial structure, and all new directories 
+with files + .wasm are watched and computed.
+
+For each file create operation, the .wasm is loaded and passed the file that triggered the event. 
 
 This program treats a directory, a written file, and a single .wasm module as the unit of computation. 
 
-For each WRITE operation, the .wasm is loaded and passed the file that triggered the WRITE event. It returns a single value, which is then used to overwrite the file which caused the WRITE event to trigger.
+### Data types
+
+1. Host -> Plug-in
+
+```json
+{
+  "event_file_name": "path/to/file.md",
+  "event_file_data": "<base64 encoded file>"
+}
+```
+
+2. Plug-in -> Host
+
+```json
+{
+  "op": "create",
+  "output_file_name": "path/to/file.md",
+  "output_file_data": "<base64 encoded file>"
+}
+```
