@@ -1,9 +1,3 @@
-github.com/extism/extism v0.0.1-beta h1:wV8jw/uDfqXiTjNMnV5J+w3KC4X5P4AKrarjgNbHr6E=
-github.com/extism/extism v0.0.1-beta/go.mod h1:d5IwHeVomfV6LLHCtBVXf1IaB0YlDsjfWi8cZmqJqUI=
-github.com/extism/extism v0.0.1-beta.0.20220904182621-ba0bdbf92881 h1:3b2avKJYQHyQBOs9XNbId0jAZW12mmermOhLnD20Sjg=
-github.com/extism/extism v0.0.1-beta.0.20220904182621-ba0bdbf92881/go.mod h1:d5IwHeVomfV6LLHCtBVXf1IaB0YlDsjfWi8cZmqJqUI=
-github.com/extism/extism v0.0.1-beta.0.20220904213906-98b463914ccf h1:j/XkL4zueCipLuPKXgwGFMSoxkxk1vBsxhP4w4pqgEg=
-github.com/extism/extism v0.0.1-beta.0.20220904213906-98b463914ccf/go.mod h1:d5IwHeVomfV6LLHCtBVXf1IaB0YlDsjfWi8cZmqJqUI=
 github.com/extism/extism v0.0.1-gamma h1:jFdcJZWMnIAPcJ7poIKnllwgD169Hec8oL6lv7EuQeo=
 github.com/extism/extism v0.0.1-gamma/go.mod h1:d5IwHeVomfV6LLHCtBVXf1IaB0YlDsjfWi8cZmqJqUI=
 github.com/fsnotify/fsnotify v1.5.4 h1:jRbGcIw6P2Meqdwuo0H1p6JVLbL5DHKAKlYndzMwVZI=
