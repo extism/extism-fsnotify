@@ -1,5 +1,7 @@
 github.com/extism/extism v0.0.1-gamma h1:jFdcJZWMnIAPcJ7poIKnllwgD169Hec8oL6lv7EuQeo=
 github.com/extism/extism v0.0.1-gamma/go.mod h1:d5IwHeVomfV6LLHCtBVXf1IaB0YlDsjfWi8cZmqJqUI=
+github.com/extism/extism v0.0.1-gamma.0.20220910220652-b6bd809d0514 h1:J669pTXcT4bXkd3mmdSc1LvTXQHnzYAmV6VnReYwChE=
+github.com/extism/extism v0.0.1-gamma.0.20220910220652-b6bd809d0514/go.mod h1:d5IwHeVomfV6LLHCtBVXf1IaB0YlDsjfWi8cZmqJqUI=
 github.com/fsnotify/fsnotify v1.5.4 h1:jRbGcIw6P2Meqdwuo0H1p6JVLbL5DHKAKlYndzMwVZI=
 github.com/fsnotify/fsnotify v1.5.4/go.mod h1:OVB6XrOHzAwXMpEM7uPOzcehqUV2UqJxmVXmkdnm1bU=
 golang.org/x/sys v0.0.0-20220412211240-33da011f77ad h1:ntjMns5wyP/fN65tdBD4g8J5w8n015+iIIs9rtjXkY0=
