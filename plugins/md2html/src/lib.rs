@@ -17,18 +17,21 @@ struct EventOutput {
 }
 
 #[no_mangle]
-pub extern "C" fn handle_file() -> i32 {
+pub extern "C" fn should_handle_file() -> i32 {
+    // access the host for input data, to which plugin has exclusive access
     let host = Host::new();
-    let file_data = host.input();
-    let input = from_slice::<EventInput>(file_data).expect("json from host");
+    // load the "input" from the caller
+    let file_name = host.input_str();
 
     // only handle .md files, ignore all others
-    if input.event_file_name.ends_with(".md") {
-        host.output(&[0]);
+    if file_name.ends_with(".md") {
         return 0;
     }
 
-    host.output(&[]);
+    host.log(
+        LogLevel::Info,
+        &format!("plugin ignoring file: {}", file_name),
+    );
     return 1;
 }
 
@@ -36,6 +39,9 @@ pub extern "C" fn handle_file() -> i32 {
 pub extern "C" fn on_file_write() -> i32 {
     let host = Host::new();
     let file_data = host.input();
+
+    // input is raw bytes, but host should make schema/encoding known to plug-in author,
+    // here we use json in the form of the `EventInput` type
     let input = from_slice::<EventInput>(file_data).expect("json from host");
 
     let bytes = base64::decode(input.event_file_data).expect("decode png");
@@ -55,12 +61,20 @@ pub extern "C" fn on_file_write() -> i32 {
             .strip_suffix(".md")
             .expect("filename has .md suffix")
     );
+
+    // log to the host runtime (written to the host logfile)
+    host.log(
+        LogLevel::Info,
+        &format!("md2html output create new file: {}", &md_file_name),
+    );
+
     let out = EventOutput {
         op: String::from("create"),
         output_file_name: md_file_name,
-
         output_file_data: base64::encode(html_output),
     };
+
+    // write output to host using json encoded bytes
     host.output(&serde_json::to_string(&out).expect("output data to json"));
 
     return 0;

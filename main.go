@@ -37,22 +37,12 @@ func main() {
 	path := "."
 	if len(os.Args) > 2 {
 		path = os.Args[2]
-		log.Println("configured watch path to:", path)
 	}
 	log.Println("watching at:", path)
-
-	// Add the path.
-	err = watcher.Add(path)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	// Look for other directories within the path and watch those too
 	dirs := make([]string, 0)
 	fs.WalkDir(os.DirFS(path), ".", func(name string, entry os.DirEntry, err error) error {
-		if name == "." {
-			return nil
-		}
 		if err != nil {
 			return err
 		}
@@ -65,7 +55,7 @@ func main() {
 
 		return nil
 	})
-	log.Println("also watching nested dirs:", dirs)
+	log.Println("watching dirs:", dirs)
 
 	// Store logs from extism plug-in runtime
 	extism.SetLogFile("output.log", "debug")
@@ -102,9 +92,6 @@ func main() {
 							catch(err, msg)
 							log.Println(msg)
 						}
-
-						// TODO: check if removed/renamed paths are auto-unwatched
-
 						continue
 					}
 				}
@@ -132,23 +119,26 @@ func main() {
 						if info.IsDir() {
 							continue
 						}
+
+						// if the plug-in doesn't want to use the file from the event, skip the
+						// event altogether
+						output, err := plugin.Call("should_handle_file", []byte(event.Name))
+						if err != nil {
+							// presence of err here indicates to skip the file (avoid copying file)
+							fmt.Println("should_handle_file:", err)
+							continue
+						}
+
+						// create input data to share with plug-in
 						eventFileData, err := os.ReadFile(event.Name)
 						catch(err, "get target file data")
 
-						// create input data to share with plug-in
 						eventInput := EventInput{
 							EventFileData: base64.RawStdEncoding.EncodeToString(eventFileData),
 							EventFileName: event.Name,
 						}
 						input, err := json.Marshal(&eventInput)
 						catch(err, "serialize event input to json")
-
-						// if the plug-in doesn't want to use the file from the event, skip the
-						// event altogether
-						output, err := plugin.Call("handle_file", input)
-						if err != nil || len(output) == 0 {
-							continue
-						}
 
 						// use input bytes and invoke the plug-in function
 						output, err = plugin.Call("on_file_write", input)
@@ -163,8 +153,9 @@ func main() {
 							err := json.Unmarshal(output, &out)
 							catch(err, "unmarshal plug-in output")
 
-							b64file := strings.ReplaceAll(out.OutputFileData, "\n", "")
-
+							// rather than giving the plug-in access to modify files directly, allow
+							// it to give the host an instruction, which the host can follow or not
+							b64file := out.OutputFileData
 							switch out.Op {
 							case "overwrite":
 								data, err := base64.RawStdEncoding.WithPadding(base64.StdPadding).DecodeString(b64file)

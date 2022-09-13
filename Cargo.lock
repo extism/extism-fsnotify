@@ -69,8 +69,9 @@ dependencies = [
 
 [[package]]
 name = "extism-manifest"
-version = "0.0.1-alpha"
-source = "git+https://github.com/extism/extism#63ff9da8dc911609afb4295a2678eae934860fcc"
+version = "0.0.1-rc.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "da1aba166bfc9088a52eae3820d2e72bbae8a01fe4ef1e175b5232fa1fe2a8ca"
 dependencies = [
  "base64",
  "serde",
@@ -78,18 +79,12 @@ dependencies = [
 
 [[package]]
 name = "extism-pdk"
-version = "0.0.1-rc.1"
+version = "0.0.1-rc.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7b6694178c3cbd425e8fc5a624ce13f350e6983cab4ecfc48786a40742d44385"
 dependencies = [
  "extism-manifest",
- "serde_json",
-]
-
-[[package]]
-name = "extism-pdk"
-version = "0.0.1-rc.1"
-source = "git+https://github.com/extism/rust-pdk#566a34888cb2fb77ab3e57097a8e40fb71a33847"
-dependencies = [
- "extism-manifest",
+ "serde",
  "serde_json",
 ]
 
@@ -147,7 +142,7 @@ name = "invert"
 version = "0.1.0"
 dependencies = [
  "base64",
- "extism-pdk 0.0.1-rc.1",
+ "extism-pdk",
  "ril",
  "serde",
  "serde_json",
@@ -170,7 +165,7 @@ name = "md2html"
 version = "0.1.0"
 dependencies = [
  "base64",
- "extism-pdk 0.0.1-rc.1 (git+https://github.com/extism/rust-pdk)",
+ "extism-pdk",
  "pulldown-cmark",
  "serde",
  "serde_json",
