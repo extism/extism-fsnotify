@@ -66,6 +66,11 @@ func main() {
 
 	// Start listening for events.
 	go func() {
+
+		// create a re-usable plugin context to manage plugins
+		ctx := extism.NewContext()
+		defer ctx.Free()
+
 		for {
 			select {
 			case event, ok := <-watcher.Events:
@@ -107,7 +112,7 @@ func main() {
 						if preloaded, ok := plugins[module]; ok {
 							plugin = preloaded
 						} else {
-							plugin, err = extism.LoadPlugin(wasm, false)
+							plugin, err = ctx.Plugin(wasm, false)
 							catch(err, fmt.Sprintf("load plugin from wasm: %s", module))
 							plugins[module] = plugin
 							log.Println("loaded module:", module)

@@ -1,3 +1,5 @@
+github.com/extism/extism v0.0.1-rc.3.0.20220920134908-7f439ae194ef h1:mzQH7PIcpQ9eVoAWXj5iBRXmkhcWclmZHenHgLKcKPA=
+github.com/extism/extism v0.0.1-rc.3.0.20220920134908-7f439ae194ef/go.mod h1:d5IwHeVomfV6LLHCtBVXf1IaB0YlDsjfWi8cZmqJqUI=
 github.com/fsnotify/fsnotify v1.5.4 h1:jRbGcIw6P2Meqdwuo0H1p6JVLbL5DHKAKlYndzMwVZI=
 github.com/fsnotify/fsnotify v1.5.4/go.mod h1:OVB6XrOHzAwXMpEM7uPOzcehqUV2UqJxmVXmkdnm1bU=
 golang.org/x/sys v0.0.0-20220412211240-33da011f77ad h1:ntjMns5wyP/fN65tdBD4g8J5w8n015+iIIs9rtjXkY0=
