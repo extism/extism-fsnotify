@@ -1,7 +1,6 @@
 use extism_pdk::*;
 use pulldown_cmark::{html, Options, Parser};
 use serde::{Deserialize, Serialize};
-use serde_json::from_slice;
 
 #[derive(Deserialize)]
 struct EventInput {
@@ -16,34 +15,19 @@ struct EventOutput {
     pub output_file_data: String,
 }
 
-#[no_mangle]
-pub extern "C" fn should_handle_file() -> i32 {
-    // access the host for input data, to which plugin has exclusive access
-    let host = Host::new();
-    // load the "input" from the caller
-    let file_name = host.input_str();
-
+#[function]
+pub fn should_handle_file(file_name: String) -> PluginResult<WithStatus<()>> {
     // only handle .md files, ignore all others
     if file_name.ends_with(".md") {
-        return 0;
+        return Ok(WithStatus::new((), 0));
     }
 
-    host.log(
-        LogLevel::Info,
-        &format!("plugin ignoring file: {}", file_name),
-    );
-    return 1;
+    info!("plugin ignoring file: {file_name}");
+    Ok(WithStatus::new((), 1))
 }
 
-#[no_mangle]
-pub extern "C" fn on_file_write() -> i32 {
-    let host = Host::new();
-    let file_data = host.input();
-
-    // input is raw bytes, but host should make schema/encoding known to plug-in author,
-    // here we use json in the form of the `EventInput` type
-    let input = from_slice::<EventInput>(file_data).expect("json from host");
-
+#[function]
+pub fn on_file_write(Json(input): Json<EventInput>) -> PluginResult<Json<EventOutput>> {
     let bytes = base64::decode(input.event_file_data).expect("decode png");
 
     let mut options = Options::empty();
@@ -63,10 +47,7 @@ pub extern "C" fn on_file_write() -> i32 {
     );
 
     // log to the host runtime (written to the host logfile)
-    host.log(
-        LogLevel::Info,
-        &format!("md2html output create new file: {}", &md_file_name),
-    );
+    info!("md2html output create new file: {}", &md_file_name);
 
     let out = EventOutput {
         op: String::from("create"),
@@ -74,8 +55,5 @@ pub extern "C" fn on_file_write() -> i32 {
         output_file_data: base64::encode(html_output),
     };
 
-    // write output to host using json encoded bytes
-    host.output(&serde_json::to_string(&out).expect("output data to json"));
-
-    return 0;
+    Ok(Json(out))
 }

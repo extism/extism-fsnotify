@@ -1,7 +1,6 @@
 use extism_pdk::*;
 use ril::Image;
 use serde::{Deserialize, Serialize};
-use serde_json::from_slice;
 
 // Data provided to the Plug-in from the Host, deserialized from input bytes
 #[derive(Deserialize)]
@@ -18,35 +17,28 @@ struct EventOutput {
     pub output_file_data: String,
 }
 
-#[no_mangle]
-pub extern "C" fn should_handle_file() -> i32 {
-    let host = Host::new();
-    let file_name = host.input_str();
-
+#[function]
+pub fn should_handle_file(file_name: String) -> PluginResult<WithStatus<()>> {
     // only handle .png files, ignore all others
     if file_name.ends_with(".png") {
-        return 0;
+        return Ok(WithStatus::new((), 0));
     }
 
-    return 1;
+    Ok(WithStatus::new((), 1))
 }
 
-#[no_mangle]
-pub extern "C" fn on_file_write() -> i32 {
-    let host = Host::new();
-    let file_data = host.input();
-    let input = from_slice::<EventInput>(file_data).expect("json from host");
-    let bytes = base64::decode(input.event_file_data).expect("decode png");
+#[function]
+pub fn on_file_write(Json(input): Json<EventInput>) -> PluginResult<Json<EventOutput>> {
+    let bytes = base64::decode(input.event_file_data)?;
 
     let mut image: Image<ril::pixel::Rgba> =
-        Image::from_bytes(ril::ImageFormat::Png, bytes).expect("parse png");
-
+        Image::from_bytes(ril::ImageFormat::Png, bytes).expect("image decode");
     image.invert();
 
     let mut dest = vec![];
     image
         .encode(ril::ImageFormat::Png, &mut dest)
-        .expect("encode png");
+        .expect("image encode");
 
     // write the bytes back to the host to be saved as the original file
     let out = EventOutput {
@@ -54,11 +46,5 @@ pub extern "C" fn on_file_write() -> i32 {
         output_file_name: input.event_file_name,
         output_file_data: base64::encode(dest),
     };
-    let bytes = serde_json::to_vec(&out).expect("json output to host");
-
-    // enable allocation from host to be transferred to the caller directly avoiding a copy
-    let output = host.alloc_bytes(&bytes);
-    host.output_memory(&output);
-
-    return 0;
+    return Ok(Json(out));
 }

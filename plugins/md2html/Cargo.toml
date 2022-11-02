@@ -7,7 +7,7 @@ edition = "2021"
 
 [dependencies]
 base64 = "0.20.0-alpha.1"
-extism-pdk = "0.0.1-rc.2"
+extism-pdk = {path = "../../../rust-pdk"} # "0.0.1-rc.2"
 pulldown-cmark = "0.9.2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
