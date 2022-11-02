@@ -16,14 +16,14 @@ struct EventOutput {
 }
 
 #[function]
-pub fn should_handle_file(file_name: String) -> FuncResult<WithStatus<()>> {
+pub fn should_handle_file(file_name: String) -> FuncResult<WithReturnCode<()>> {
     // only handle .md files, ignore all others
     if file_name.ends_with(".md") {
-        return Ok(WithStatus::new((), 0));
+        return Ok(WithReturnCode::new((), 0));
     }
 
     info!("plugin ignoring file: {file_name}");
-    Ok(WithStatus::new((), 1))
+    Ok(WithReturnCode::new((), 1))
 }
 
 #[function]

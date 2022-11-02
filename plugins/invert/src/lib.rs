@@ -18,13 +18,13 @@ struct EventOutput {
 }
 
 #[function]
-pub fn should_handle_file(file_name: String) -> FuncResult<WithStatus<()>> {
+pub fn should_handle_file(file_name: String) -> FuncResult<WithReturnCode<()>> {
     // only handle .png files, ignore all others
     if file_name.ends_with(".png") {
-        return Ok(WithStatus::new((), 0));
+        return Ok(WithReturnCode::new((), 0));
     }
 
-    Ok(WithStatus::new((), 1))
+    Ok(WithReturnCode::new((), 1))
 }
 
 #[function]
