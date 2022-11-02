@@ -18,7 +18,7 @@ struct EventOutput {
 }
 
 #[function]
-pub fn should_handle_file(file_name: String) -> PluginResult<WithStatus<()>> {
+pub fn should_handle_file(file_name: String) -> FuncResult<WithStatus<()>> {
     // only handle .png files, ignore all others
     if file_name.ends_with(".png") {
         return Ok(WithStatus::new((), 0));
@@ -28,7 +28,7 @@ pub fn should_handle_file(file_name: String) -> PluginResult<WithStatus<()>> {
 }
 
 #[function]
-pub fn on_file_write(Json(input): Json<EventInput>) -> PluginResult<Json<EventOutput>> {
+pub fn on_file_write(Json(input): Json<EventInput>) -> FuncResult<Json<EventOutput>> {
     let bytes = base64::decode(input.event_file_data)?;
 
     let mut image: Image<ril::pixel::Rgba> =
