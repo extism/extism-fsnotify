@@ -7,7 +7,7 @@ Use the filesystem as a computing environment.
 Make sure you have Extism installed: https://extism.org/docs/install
 
 ```sh
-make plugins # requires Rust toolchain
+make build-plugins # requires Rust toolchain
 make run # requires Go toolchain
 ```
 
