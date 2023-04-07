@@ -112,7 +112,7 @@ func main() {
 						if preloaded, ok := plugins[module]; ok {
 							plugin = preloaded
 						} else {
-							plugin, err = ctx.Plugin(wasm, false)
+							plugin, err = ctx.Plugin(wasm, nil, false)
 							catch(err, fmt.Sprintf("load plugin from wasm: %s", module))
 							plugins[module] = plugin
 							log.Println("loaded module:", module)
