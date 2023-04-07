@@ -1,7 +1,7 @@
 clean:
 	rm -rf apps
 
-plugins: 
+build-plugins: 
 	cargo build --target wasm32-unknown-unknown --release --manifest-path plugins/invert/Cargo.toml
 	cargo build --target wasm32-unknown-unknown --release --manifest-path plugins/md2html/Cargo.toml
 	
