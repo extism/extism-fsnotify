@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -10,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/extism/extism"
+	"github.com/extism/go-sdk"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -57,20 +58,11 @@ func main() {
 	})
 	log.Println("watching dirs:", dirs)
 
-	// Store logs from extism plug-in runtime
-	extism.SetLogFile("output.log", "debug")
-	log.Println("set log file:", "output.log")
-
 	// Create a collection to store our plug-ins throughout the apps lifetime
-	plugins := make(map[string]extism.Plugin)
+	plugins := make(map[string]*extism.Plugin)
 
 	// Start listening for events.
 	go func() {
-
-		// create a re-usable plugin context to manage plugins
-		ctx := extism.NewContext()
-		defer ctx.Free()
-
 		for {
 			select {
 			case event, ok := <-watcher.Events:
@@ -103,19 +95,22 @@ func main() {
 
 				for _, name := range files {
 					if strings.HasSuffix(name, ".wasm") && !strings.HasSuffix(event.Name, ".wasm") {
-						module := filepath.Join(dir, name)
-						wasm, err := os.Open(module)
-						catch(err, "open wasm file")
+						path := filepath.Join(dir, name)
+						pluginManifest := extism.Manifest{
+							Wasm: []extism.Wasm{extism.WasmFile{
+								Path: path,
+							}},
+						}
 
 						// load the wasm as an extism plug-in (if cached, use existing plug-in)
-						var plugin extism.Plugin
-						if preloaded, ok := plugins[module]; ok {
+						var plugin *extism.Plugin
+						if preloaded, ok := plugins[path]; ok {
 							plugin = preloaded
 						} else {
-							plugin, err = ctx.Plugin(wasm, nil, false)
-							catch(err, fmt.Sprintf("load plugin from wasm: %s", module))
-							plugins[module] = plugin
-							log.Println("loaded module:", module)
+							plugin, err = extism.NewPlugin(context.Background(), pluginManifest, extism.PluginConfig{}, nil)
+							catch(err, fmt.Sprintf("load plugin from wasm: %s", path))
+							plugins[path] = plugin
+							log.Println("loaded module:", path)
 						}
 
 						// read event trigger file
@@ -127,7 +122,7 @@ func main() {
 
 						// if the plug-in doesn't want to use the file from the event, skip the
 						// event altogether
-						output, err := plugin.Call("should_handle_file", []byte(event.Name))
+						_, output, err := plugin.Call("should_handle_file", []byte(event.Name))
 						if err != nil {
 							// presence of err here indicates to skip the file (avoid copying file)
 							fmt.Println("should_handle_file:", err)
@@ -146,7 +141,7 @@ func main() {
 						catch(err, "serialize event input to json")
 
 						// use input bytes and invoke the plug-in function
-						output, err = plugin.Call("on_file_write", input)
+						_, output, err = plugin.Call("on_file_write", input)
 						catch(err, "calling on_file_write")
 						log.Println(fmt.Sprintf(
 							"called on_file_write in plugin: %s [%s]", name, event.Name,
