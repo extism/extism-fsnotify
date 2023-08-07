@@ -4,8 +4,6 @@ https://user-images.githubusercontent.com/7517515/188239556-029f5142-0cb8-4bfb-a
 
 Use the filesystem as a computing environment. 
 
-Make sure you have Extism installed: https://extism.org/docs/install
-
 ```sh
 make build-plugins # requires Rust toolchain
 make run # requires Go toolchain
