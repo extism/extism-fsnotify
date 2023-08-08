@@ -109,6 +109,10 @@ func main() {
 						} else {
 							plugin, err = extism.NewPlugin(context.Background(), pluginManifest, extism.PluginConfig{}, nil)
 							catch(err, fmt.Sprintf("load plugin from wasm: %s", path))
+							plugin.SetLogLevel(extism.Debug)
+							plugin.SetLogger(func(level extism.LogLevel, msg string) {
+								log.Printf("[%s] %s", level, msg)
+							})
 							plugins[path] = plugin
 							log.Println("loaded module:", path)
 						}
