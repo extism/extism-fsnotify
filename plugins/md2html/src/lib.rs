@@ -1,7 +1,6 @@
 use extism_pdk::*;
 use pulldown_cmark::{html, Options, Parser};
 use serde::{Deserialize, Serialize};
-use serde_json::from_slice;
 
 #[derive(Deserialize)]
 struct EventInput {
@@ -16,35 +15,21 @@ struct EventOutput {
     pub output_file_data: String,
 }
 
-#[no_mangle]
-pub extern "C" fn should_handle_file() -> i32 {
-    // access the host for input data, to which plugin has exclusive access
-    let host = Host::new();
-    // load the "input" from the caller
-    let file_name = host.input_str();
-
+#[plugin_fn]
+pub fn should_handle_file(file_name: String) -> FnResult<i32> {
     // only handle .md files, ignore all others
     if file_name.ends_with(".md") {
-        return 0;
+        return Ok(0);
     }
 
-    host.log(
-        LogLevel::Info,
-        &format!("plugin ignoring file: {}", file_name),
-    );
-    return 1;
+    log!(LogLevel::Info, "plugin ignoring file: {}", file_name);
+
+    return Ok(1);
 }
 
-#[no_mangle]
-pub extern "C" fn on_file_write() -> i32 {
-    let host = Host::new();
-    let file_data = host.input();
-
-    // input is raw bytes, but host should make schema/encoding known to plug-in author,
-    // here we use json in the form of the `EventInput` type
-    let input = from_slice::<EventInput>(file_data).expect("json from host");
-
-    let bytes = base64::decode(input.event_file_data).expect("decode png");
+#[plugin_fn]
+pub fn on_file_write(input: Json<EventInput>) -> FnResult<Json<EventOutput>> {
+    let bytes = base64::decode(input.0.event_file_data).expect("decode png");
 
     let mut options = Options::empty();
     options.insert(Options::ENABLE_STRIKETHROUGH);
@@ -57,15 +42,17 @@ pub extern "C" fn on_file_write() -> i32 {
     let md_file_name = format!(
         "{}.html",
         input
+            .0
             .event_file_name
             .strip_suffix(".md")
             .expect("filename has .md suffix")
     );
 
     // log to the host runtime (written to the host logfile)
-    host.log(
+    log!(
         LogLevel::Info,
-        &format!("md2html output create new file: {}", &md_file_name),
+        "md2html output create new file: {}",
+        &md_file_name,
     );
 
     let out = EventOutput {
@@ -74,8 +61,5 @@ pub extern "C" fn on_file_write() -> i32 {
         output_file_data: base64::encode(html_output),
     };
 
-    // write output to host using json encoded bytes
-    host.output(&serde_json::to_string(&out).expect("output data to json"));
-
-    return 0;
+    Ok(Json(out))
 }
