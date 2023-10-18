@@ -28,8 +28,8 @@ pub fn should_handle_file(file_name: String) -> FnResult<i32> {
 }
 
 #[plugin_fn]
-pub fn on_file_write(input: Json<EventInput>) -> FnResult<Json<EventOutput>> {
-    let bytes = base64::decode(input.0.event_file_data).expect("decode png");
+pub fn on_file_write(Json(input): Json<EventInput>) -> FnResult<Json<EventOutput>> {
+    let bytes = base64::decode(input.event_file_data).expect("decode png");
 
     let mut options = Options::empty();
     options.insert(Options::ENABLE_STRIKETHROUGH);
@@ -42,7 +42,6 @@ pub fn on_file_write(input: Json<EventInput>) -> FnResult<Json<EventOutput>> {
     let md_file_name = format!(
         "{}.html",
         input
-            .0
             .event_file_name
             .strip_suffix(".md")
             .expect("filename has .md suffix")
