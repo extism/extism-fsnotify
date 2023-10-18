@@ -28,8 +28,8 @@ pub fn should_handle_file(file_name: String) -> FnResult<i32> {
 }
 
 #[plugin_fn]
-pub fn on_file_write(input: Json<EventInput>) -> FnResult<Json<EventOutput>> {
-    let bytes = base64::decode(input.0.event_file_data).expect("decode png");
+pub fn on_file_write(Json(input): Json<EventInput>) -> FnResult<Json<EventOutput>> {
+    let bytes = base64::decode(input.event_file_data).expect("decode png");
 
     let mut image: Image<ril::pixel::Rgba> =
         Image::from_bytes(ril::ImageFormat::Png, bytes).expect("parse png");
@@ -44,7 +44,7 @@ pub fn on_file_write(input: Json<EventInput>) -> FnResult<Json<EventOutput>> {
     // write the bytes back to the host to be saved as the original file
     let out = EventOutput {
         op: String::from("overwrite"),
-        output_file_name: input.0.event_file_name,
+        output_file_name: input.event_file_name,
         output_file_data: base64::encode(dest),
     };
 
