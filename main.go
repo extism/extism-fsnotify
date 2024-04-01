@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/extism/go-sdk"
+	extism "github.com/extism/go-sdk"
 	"github.com/fsnotify/fsnotify"
 )
 
@@ -109,7 +109,7 @@ func main() {
 						} else {
 							plugin, err = extism.NewPlugin(context.Background(), pluginManifest, extism.PluginConfig{}, nil)
 							catch(err, fmt.Sprintf("load plugin from wasm: %s", path))
-							plugin.SetLogLevel(extism.Debug)
+							plugin.SetLogLevel(extism.LogLevelDebug)
 							plugin.SetLogger(func(level extism.LogLevel, msg string) {
 								log.Printf("[%s] %s", level, msg)
 							})
@@ -126,7 +126,7 @@ func main() {
 
 						// if the plug-in doesn't want to use the file from the event, skip the
 						// event altogether
-						_, output, err := plugin.Call("should_handle_file", []byte(event.Name))
+						_, _, err = plugin.Call("should_handle_file", []byte(event.Name))
 						if err != nil {
 							// presence of err here indicates to skip the file (avoid copying file)
 							fmt.Println("should_handle_file:", err)
@@ -138,18 +138,19 @@ func main() {
 						catch(err, "get target file data")
 
 						eventInput := EventInput{
-							EventFileData: base64.RawStdEncoding.EncodeToString(eventFileData),
+
+							EventFileData: base64.StdEncoding.EncodeToString(eventFileData),
 							EventFileName: event.Name,
 						}
 						input, err := json.Marshal(&eventInput)
 						catch(err, "serialize event input to json")
 
 						// use input bytes and invoke the plug-in function
-						_, output, err = plugin.Call("on_file_write", input)
+						_, output, err := plugin.Call("on_file_write", input)
 						catch(err, "calling on_file_write")
-						log.Println(fmt.Sprintf(
-							"called on_file_write in plugin: %s [%s]", name, event.Name,
-						))
+						log.Printf(
+							"called on_file_write in plugin: %s [%s]\n", name, event.Name,
+						)
 
 						// take the output bytes from the plug-in and write them to the trigger file
 						if len(output) != 0 {
@@ -162,11 +163,11 @@ func main() {
 							b64file := out.OutputFileData
 							switch out.Op {
 							case "overwrite":
-								data, err := base64.RawStdEncoding.WithPadding(base64.StdPadding).DecodeString(b64file)
+								data, err := base64.StdEncoding.WithPadding(base64.StdPadding).DecodeString(b64file)
 								catch(err, "decode output file data for overwrite")
 								catch(os.WriteFile(event.Name, data, 0755), "writing output to file")
 							case "create":
-								data, err := base64.RawStdEncoding.WithPadding(base64.StdPadding).DecodeString(b64file)
+								data, err := base64.StdEncoding.WithPadding(base64.StdPadding).DecodeString(b64file)
 								catch(err, "decode output file data for create")
 
 								catch(

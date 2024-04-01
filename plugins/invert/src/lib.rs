@@ -29,17 +29,18 @@ pub fn should_handle_file(file_name: String) -> FnResult<i32> {
 
 #[plugin_fn]
 pub fn on_file_write(Json(input): Json<EventInput>) -> FnResult<Json<EventOutput>> {
-    let bytes = base64::decode(input.event_file_data).expect("decode png");
+    let bytes = base64::decode(input.event_file_data)
+        .map_err(|e| WithReturnCode::new(Error::msg(e.to_string()), -1))?;
 
-    let mut image: Image<ril::pixel::Rgba> =
-        Image::from_bytes(ril::ImageFormat::Png, bytes).expect("parse png");
+    let mut image: Image<ril::pixel::Rgba> = Image::from_bytes(ril::ImageFormat::Png, bytes)
+        .map_err(|e| WithReturnCode::new(Error::msg(e.to_string()), -2))?;
 
     image.invert();
 
     let mut dest = vec![];
     image
         .encode(ril::ImageFormat::Png, &mut dest)
-        .expect("encode png");
+        .map_err(|e| WithReturnCode::new(Error::msg(e.to_string()), -3))?;
 
     // write the bytes back to the host to be saved as the original file
     let out = EventOutput {

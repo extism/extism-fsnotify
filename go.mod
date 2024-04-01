@@ -3,7 +3,7 @@ module github.com/extism/extism-fsnotify
 go 1.19
 
 require (
-	github.com/extism/go-sdk v0.0.0-20230807073724-2e50fdad8803
+	github.com/extism/go-sdk v1.2.0
 	github.com/fsnotify/fsnotify v1.5.4
 )
 

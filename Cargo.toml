@@ -1,4 +1,3 @@
 [workspace]
-
-members = [ "plugins/*" ]
-
+resolver = "2"
+members = ["plugins/*"]

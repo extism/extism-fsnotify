@@ -29,23 +29,19 @@ pub fn should_handle_file(file_name: String) -> FnResult<i32> {
 
 #[plugin_fn]
 pub fn on_file_write(Json(input): Json<EventInput>) -> FnResult<Json<EventOutput>> {
-    let bytes = base64::decode(input.event_file_data).expect("decode png");
+    let bytes = base64::decode(input.event_file_data)
+        .map_err(|e| WithReturnCode::new(Error::msg(e.to_string()), -1))?;
 
     let mut options = Options::empty();
     options.insert(Options::ENABLE_STRIKETHROUGH);
-    let md = String::from_utf8(bytes).expect("text from file");
+    let md =
+        String::from_utf8(bytes).map_err(|e| WithReturnCode::new(Error::msg(e.to_string()), -2))?;
     let parser = Parser::new_ext(&md, options);
 
     let mut html_output = String::new();
     html::push_html(&mut html_output, parser);
 
-    let md_file_name = format!(
-        "{}.html",
-        input
-            .event_file_name
-            .strip_suffix(".md")
-            .expect("filename has .md suffix")
-    );
+    let md_file_name = input.event_file_name.replace(".md", ".html");
 
     // log to the host runtime (written to the host logfile)
     log!(
